@@ -10,20 +10,12 @@ const createComment = async (context: HookContext) => {
       .service('comments')
       .create({
         text: comment,
-      });
+      }, params.forward());
   });
 
   if (commentsPromise) {
     await Promise.all(commentsPromise);
   }
-
-  // for await (let comment of data.comments) {
-  //   await (app as Application)
-  //     .service('comments')
-  //     .create({
-  //       text: comment,
-  //     });
-  // }
 
   delete context.data.comments;
 

@@ -9,7 +9,7 @@ export default {
     all: [ authenticate('jwt') ],
     find: [],
     get: [],
-    create: [],
+    create: [async (context: HookContext) => console.log(context.params.user)],
     update: [],
     patch: [],
     remove: []

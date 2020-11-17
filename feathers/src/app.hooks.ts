@@ -3,14 +3,18 @@
 
 import { trace } from 'feathers-debugger-service';
 import errorHandler from './hooks/error-handler';
+import addParamsForward from './hooks/forward-params';
 
 export default {
   before: {
-    all: [trace({
-      captureParams: true,  // captures hook.params, default is false (optional)
-      captureResult: true,  // captures hook.result, default is false (optional)
-      captureQuery: true // captures hook.params.query, default is false (optional)
-    })],
+    all: [
+      addParamsForward(),
+      trace({
+        captureParams: true,  // captures hook.params, default is false (optional)
+        captureResult: true,  // captures hook.result, default is false (optional)
+        captureQuery: true // captures hook.params.query, default is false (optional)
+      })
+    ],
     find: [],
     get: [],
     create: [],
