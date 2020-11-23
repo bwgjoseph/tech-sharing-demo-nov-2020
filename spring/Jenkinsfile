@@ -1,0 +1,94 @@
+/**
+ * @author: joseph.gan
+ * @date: 28 December 2018
+ * 
+**/
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        bat 'gradle clean build'
+      }
+    }
+    stage('Unit Test') {
+      steps {
+        bat 'gradle test'
+      }
+      post {
+        success {
+          publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'build/reports/tests/test', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: ''])
+
+        }
+      }
+    }
+    stage('Code Coverage') {
+      steps {
+        bat 'gradle jacocoTestReport'
+      }
+      post {
+        success {
+          jacoco(
+            execPattern: 'build/jacoco/*.exec',
+            classPattern: 'build/classes',
+            sourcePattern: 'src/main/java',
+            exclusionPattern: 'src/test/*'
+          )
+        }
+      }
+    }
+    stage('Job') {
+      parallel {
+        stage('Job A') {
+          steps {
+            echo 'hello'
+          }
+        }
+        stage('Job B') {
+          steps {
+            echo 'world'
+          }
+        }
+      }
+    }
+    stage('Publish Sonarqube') {
+      steps {
+        bat 'gradle sonarqube -Dsonar.host.url=http://sonarqube.armyc3.com:9000 -Dsonar.login=ebbd62a3a63d5c1713273aae381d1ae89ff70cc9'
+      }
+    }
+    stage('Push Artifact to Nexus') {
+      steps {
+        bat 'gradle publish'
+      }
+    }
+    stage('Create and Push Docker Image') {
+      steps {
+        echo 'Building Docker image'
+        
+        // bat 'docker login -u admin -p admin123 169.254.6.100:8083'
+        bat 'docker build -t dsta/spring-overlay-service:0.0.1-S .'
+        script {
+            withDockerRegistry([credentialsId: 'nexus-docker', url: "http://169.254.6.100:8083"]) {
+              bat 'docker tag dsta/spring-overlay-service:0.0.1-S 169.254.6.100:8083/dsta/spring-overlay-service:0.0.1-S'
+              bat 'docker push 169.254.6.100:8083/dsta/spring-overlay-service:0.0.1-S'
+            }
+          }
+      }
+      post {
+        success {
+          bat 'docker images'
+          bat 'docker image rm dsta/spring-overlay-service:0.0.1-S 169.254.6.100:8083/dsta/spring-overlay-service:0.0.1-S'
+          bat 'docker images'
+        }
+      }
+    }
+  }
+  post {
+    success {
+      updateGitlabCommitStatus(name: 'jenkins-build', state: 'success')
+    }
+    failure {
+      updateGitlabCommitStatus(name: 'jenkins-build', state: 'failed')
+    }
+  }
+}

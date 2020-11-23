@@ -1,0 +1,43 @@
+= ArmyC3 Overlay Service REST Docs
+Joseph Gan
+1.0.0, 23 Nov 2020;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+
+== Add a new overlay
+ 
+A `POST` request is used to add a new overlay
+ 
+operation::when-create-overlay-then-return-created-overlay[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body']
+
+== Get single overlay by id
+ 
+A `GET` request with id is used to retrieve a existing overlay
+ 
+operation::when-get-overlay-by-id-then-return-overlay[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body,path-parameters']
+
+== Get single overlay by name
+ 
+A `GET` request with name is used to retrieve a existing overlay
+ 
+operation::when-get-overlay-by-name-then-return-overlay[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body']
+
+== Get all overlay
+ 
+A `GET` request is used to retrieve all existing overlay
+ 
+operation::when-get-all-overlays-then-return-all-overlays[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body']
+
+== Update existing overlay
+ 
+A `PUT` request is used to update an existing overlay
+ 
+operation::when-update-single-overlay-then-return-updated-overlay[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body']
+
+== Delete existing overlay
+ 
+A `DELETE` request is used to delete an existing overlay
+ 
+operation::when-delete-single-overlay-then-return-deleted-overlay[snippets='curl-request,httpie-request,http-request,request-body,request-fields,http-response,response-body']

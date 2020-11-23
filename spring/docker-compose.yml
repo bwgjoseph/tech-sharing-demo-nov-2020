@@ -1,0 +1,42 @@
+version: '3.7'
+
+services:
+  spring-overlay:
+    image: techdemolayer/spring-overlay-service
+    container_name: spring-overlay-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - 8888:8888
+    depends_on:
+      - spring-mongo
+      
+  spring-mongo:
+    image: mongo:4.4.0
+    container_name: spring-mongo
+    ports:
+      - 27117:27017
+    volumes:
+      - mongo_db:/data/db
+      - mongo_configdb:/data/configdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    restart: unless-stopped
+
+  spring-mongo-express:
+    image: mongo-express:0.54.0
+    container_name: spring-mongo-express
+    depends_on:
+      - spring-mongo
+    ports:
+      - 8181:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: password
+      ME_CONFIG_MONGODB_SERVER: spring-mongo
+    restart: unless-stopped
+
+volumes:
+    mongo_db:
+    mongo_configdb:

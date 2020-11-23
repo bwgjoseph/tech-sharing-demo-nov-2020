@@ -1,0 +1,111 @@
+plugins {
+	id 'java'
+	id 'maven-publish'
+	id 'eclipse'
+	id 'jacoco'
+	id 'org.springframework.boot' version '2.4.0'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'org.asciidoctor.convert' version '2.4.0'
+	id 'org.sonarqube' version '3.0'
+}
+
+group = 'com.armyc3'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 11
+
+configurations {
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux' 
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test' 
+    testImplementation 'io.projectreactor:reactor-test' 
+	testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
+	testImplementation 'org.assertj:assertj-core'
+    
+    developmentOnly 'org.springframework.boot:spring-boot-devtools' 
+	compileOnly 'org.projectlombok:lombok' 
+    
+    // Generating Rest API Doc
+    asciidoctor 'org.springframework.restdocs:spring-restdocs-asciidoctor'
+    testImplementation 'org.springframework.restdocs:spring-restdocs-webtestclient'
+    
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+}
+
+ext { 
+	snippetsDir = file('build/generated-snippets')
+}
+
+test {
+    useJUnitPlatform()
+    outputs.dir snippetsDir
+}
+
+javadoc {
+    options.addBooleanOption('html5', true)
+}
+
+asciidoctor { 
+	dependsOn test
+	inputs.dir snippetsDir 
+}
+
+bootJar {
+	dependsOn asciidoctor 
+	from ("${asciidoctor.outputDir}/html5") { 
+		into 'static/docs'
+	}
+}
+
+task myJavadocs(type: Javadoc) {
+  source = sourceSets.main.allJava
+}
+
+sonarqube {
+	properties {
+        property "sonar.projectName", "Overlay-Service"
+        property "sonar.projectKey", "com.armyc3:overlay-service"
+        property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            def releasesRepoUrl = "http://localhost:8081/repository/maven-releases/"
+            def snapshotsRepoUrl = "http://localhost:8081/repository/maven-snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials {
+                username 'admin'
+                password 'admin123'
+            }
+        }
+    }
+    publications{
+        mavenJava(MavenPublication) {                
+            from components.java
+        }
+    }
+}
+
+task printProps {
+    doFirst {
+        println nexusUsername
+        println nexusPassword
+        println System.properties['nexus.username']
+        println System.properties['nexus.password']
+    }
+}
